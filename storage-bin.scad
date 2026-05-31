@@ -167,81 +167,42 @@ module bottom_chamfer_cut() {
 }
 
 // ----- Stacking helpers -------------------------------------
-// Shave the OUTER half of the top of the back wall + rear portion of the
-// side walls, leaving the INNER half as an upward-protruding lip.
-// The front of each side-wall top is sloped on its FULL thickness from
-// the chamfer corner (z = _height at y = _cl) down to rim level
-// (z = _height - h at y = _cl + taper). Without that wedge a vertical
-// "nose" / step at y = _cl would prevent a stacked bin from sitting flat.
+// Shave the OUTER half of the top of the back wall + side walls down to
+// rim level (z = _height - h), leaving the INNER half as the lip. The
+// outer cut spans the FULL side-wall length (y in [0, _depth]); where the
+// original chamfered profile sits below rim level it is simply unaffected.
+// No wedges or sub-chamfers — a stacked bin's outer wall meets the lower
+// bin's outer wall flush all the way around.
 module top_lip_cut(h=_lip_h) {
     w2 = _wall / 2;        // outer half-thickness we cut away
     eps = 0.01;
-    taper = h;             // 45° slope length, equals lip height
     // Back wall outer half
     translate([-eps, _depth - w2, _height - h])
         cube([_width + 2*eps, w2 + eps, h + eps]);
-    // Left side wall outer half (starts AFTER the taper region so the
-    // sloped top is not undercut by the rim).
-    translate([-eps, _cl + taper, _height - h])
-        cube([w2 + eps, _depth - _cl - taper + eps, h + eps]);
-    // Right side wall outer half
-    translate([_width - w2, _cl + taper, _height - h])
-        cube([w2 + 2*eps, _depth - _cl - taper + eps, h + eps]);
-
-    // Full-thickness rectangular cut that chops the chamfer peak flat at
-    // rim level (z = _height - h) over the range y in [_cl, _cl + taper].
-    // This removes the sharp triangular peak the side-wall chamfer used to
-    // make at (y = _cl, z = _height); the chamfer slope now lands cleanly
-    // on the rim instead of sticking up into a point above it.
-    translate([-eps, 0, 0])
-        rotate([90, 0, 90])
-            linear_extrude(height = _wall + 2*eps)
-                polygon([[_cl,         _height + eps],
-                         [_cl + taper, _height + eps],
-                         [_cl + taper, _height - h],
-                         [_cl,         _height - h]]);
-    // Same cut on the RIGHT side wall.
-    translate([_width - _wall - eps, 0, 0])
-        rotate([90, 0, 90])
-            linear_extrude(height = _wall + 2*eps)
-                polygon([[_cl,         _height + eps],
-                         [_cl + taper, _height + eps],
-                         [_cl + taper, _height - h],
-                         [_cl,         _height - h]]);
-
-    // 45 deg chamfer on the FRONT face of the inner-half side-wall lip,
-    // killing the sharp vertical "nose" at y = _cl + taper.  The lip now
-    // ramps from rim level (z = _height - h) at y = _cl + taper up to
-    // full lip height (z = _height) at y = _cl + taper + h.
-    // Left side (inner half only: x = [0, w2]).
-    translate([-eps, 0, 0])
-        rotate([90, 0, 90])
-            linear_extrude(height = w2 + 2*eps)
-                polygon([[_cl + taper,     _height + eps],
-                         [_cl + taper + h, _height + eps],
-                         [_cl + taper,     _height - h]]);
-    // Right side (inner half only: x = [_width - w2, _width]).
-    translate([_width - w2 - eps, 0, 0])
-        rotate([90, 0, 90])
-            linear_extrude(height = w2 + 2*eps)
-                polygon([[_cl + taper,     _height + eps],
-                         [_cl + taper + h, _height + eps],
-                         [_cl + taper,     _height - h]]);
+    // Left side wall outer half — full length, straight cut at rim level.
+    translate([-eps, -eps, _height - h])
+        cube([w2 + eps, _depth + 2*eps, h + eps]);
+    // Right side wall outer half — full length, straight cut at rim level.
+    translate([_width - w2, -eps, _height - h])
+        cube([w2 + 2*eps, _depth + 2*eps, h + eps]);
 }
 
 // Pocket in the floor underside that mates with the lip of the bin below.
+// Left/right recesses span the FULL depth so the lower bin's chamfered
+// inner side-wall (which still rises above rim level in the slope region
+// just in front of y = _cl) cannot collide with the upper bin's floor.
 module bottom_recess_cut(h=_lip_h, cl=stack_clearance) {
     w2  = _wall / 2;       // lip thickness
     eps = 0.01;
     // Back lip recess (inner half of back-wall footprint, + clearance)
     translate([-cl, _depth - _wall - cl, -eps])
         cube([_width + 2*cl, w2 + 2*cl, h + eps]);
-    // Left side lip recess
-    translate([w2 - cl, _cl - cl, -eps])
-        cube([w2 + 2*cl, _depth - _cl + cl, h + eps]);
-    // Right side lip recess
-    translate([_width - _wall - cl, _cl - cl, -eps])
-        cube([w2 + 2*cl, _depth - _cl + cl, h + eps]);
+    // Left side lip recess — full depth
+    translate([w2 - cl, -cl, -eps])
+        cube([w2 + 2*cl, _depth + 2*cl, h + eps]);
+    // Right side lip recess — full depth
+    translate([_width - _wall - cl, -cl, -eps])
+        cube([w2 + 2*cl, _depth + 2*cl, h + eps]);
 }
 
 bin();
