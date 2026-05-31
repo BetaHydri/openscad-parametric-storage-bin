@@ -205,6 +205,25 @@ module top_lip_cut(h=_lip_h) {
                 polygon([[_cl,         _height + eps],
                          [_cl + taper, _height + eps],
                          [_cl + taper, _height - h]]);
+
+    // 45 deg chamfer on the FRONT face of the inner-half side-wall lip,
+    // killing the sharp vertical "nose" at y = _cl + taper.  The lip now
+    // ramps from rim level (z = _height - h) at y = _cl + taper up to
+    // full lip height (z = _height) at y = _cl + taper + h.
+    // Left side (inner half only: x = [0, w2]).
+    translate([-eps, 0, 0])
+        rotate([90, 0, 90])
+            linear_extrude(height = w2 + 2*eps)
+                polygon([[_cl + taper,     _height + eps],
+                         [_cl + taper + h, _height + eps],
+                         [_cl + taper,     _height - h]]);
+    // Right side (inner half only: x = [_width - w2, _width]).
+    translate([_width - w2 - eps, 0, 0])
+        rotate([90, 0, 90])
+            linear_extrude(height = w2 + 2*eps)
+                polygon([[_cl + taper,     _height + eps],
+                         [_cl + taper + h, _height + eps],
+                         [_cl + taper,     _height - h]]);
 }
 
 // Pocket in the floor underside that mates with the lip of the bin below.
