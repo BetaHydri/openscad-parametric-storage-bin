@@ -187,15 +187,16 @@ module top_lip_cut(h=_lip_h) {
         cube([w2 + 2*eps, _depth - _cl + eps, h + eps]);
 
     // Front taper of the left side lip: remove an upper-front triangular
-    // wedge so the lip ramps from 0 at y=_cl up to full h at y=_cl+taper.
-    translate([-eps, 0, 0])
+    // wedge from the INNER half (x = [w2, _wall]) so the lip ramps from
+    // 0 at y=_cl up to full h at y=_cl+taper.
+    translate([w2 - eps, 0, 0])
         rotate([90, 0, 90])
             linear_extrude(height = w2 + 2*eps)
                 polygon([[_cl,         _height - h],
                          [_cl,         _height + eps],
                          [_cl + taper, _height + eps]]);
-    // Front taper of the right side lip (mirrored).
-    translate([_width - w2 - eps, 0, 0])
+    // Front taper of the right side lip (mirrored, INNER half).
+    translate([_width - _wall - eps, 0, 0])
         rotate([90, 0, 90])
             linear_extrude(height = w2 + 2*eps)
                 polygon([[_cl,         _height - h],
