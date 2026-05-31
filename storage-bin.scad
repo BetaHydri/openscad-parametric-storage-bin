@@ -185,24 +185,35 @@ module top_lip_cut(h=_lip_h) {
     // Right side wall outer half — full length, straight cut at rim level.
     translate([_width - w2, -eps, _height - h])
         cube([w2 + 2*eps, _depth + 2*eps, h + eps]);
+
+    // Front chamfer region (y in [0, _cl]): cut the INNER half of each
+    // side wall flat at rim level too. The wall's chamfered top already
+    // dips below rim level over most of this range, but the inner-half
+    // slope still pokes above rim near y = _cl. This shave guarantees a
+    // clean rim across the whole front so the recess in the upper bin's
+    // floor only needs to span the lip (y in [_cl, _depth]).
+    translate([w2 - eps, -eps, _height - h])
+        cube([w2 + 2*eps, _cl + eps, h + eps]);
+    translate([_width - _wall - eps, -eps, _height - h])
+        cube([w2 + 2*eps, _cl + eps, h + eps]);
 }
 
 // Pocket in the floor underside that mates with the lip of the bin below.
-// Left/right recesses span the FULL depth so the lower bin's chamfered
-// inner side-wall (which still rises above rim level in the slope region
-// just in front of y = _cl) cannot collide with the upper bin's floor.
+// Left/right recesses only span the lip region (y in [_cl, _depth]); the
+// front chamfer region of the lower bin is shaved flat at rim level by
+// top_lip_cut so no clearance is needed there.
 module bottom_recess_cut(h=_lip_h, cl=stack_clearance) {
     w2  = _wall / 2;       // lip thickness
     eps = 0.01;
     // Back lip recess (inner half of back-wall footprint, + clearance)
     translate([-cl, _depth - _wall - cl, -eps])
         cube([_width + 2*cl, w2 + 2*cl, h + eps]);
-    // Left side lip recess — full depth
-    translate([w2 - cl, -cl, -eps])
-        cube([w2 + 2*cl, _depth + 2*cl, h + eps]);
-    // Right side lip recess — full depth
-    translate([_width - _wall - cl, -cl, -eps])
-        cube([w2 + 2*cl, _depth + 2*cl, h + eps]);
+    // Left side lip recess — only as long as the lip itself
+    translate([w2 - cl, _cl - cl, -eps])
+        cube([w2 + 2*cl, _depth - _cl + 2*cl, h + eps]);
+    // Right side lip recess — only as long as the lip itself
+    translate([_width - _wall - cl, _cl - cl, -eps])
+        cube([w2 + 2*cl, _depth - _cl + 2*cl, h + eps]);
 }
 
 bin();
