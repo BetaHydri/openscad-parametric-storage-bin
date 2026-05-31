@@ -188,23 +188,26 @@ module top_lip_cut(h=_lip_h) {
     translate([_width - w2, _cl + taper, _height - h])
         cube([w2 + 2*eps, _depth - _cl - taper + eps, h + eps]);
 
-    // Full-thickness 45° wedge that slopes the LEFT side wall top from
-    // (y=_cl,        z=_height)       <- chamfer corner, no cut
-    // down to
-    // (y=_cl+taper,  z=_height - h)   <- rim level, matches outer cut.
+    // Full-thickness rectangular cut that chops the chamfer peak flat at
+    // rim level (z = _height - h) over the range y in [_cl, _cl + taper].
+    // This removes the sharp triangular peak the side-wall chamfer used to
+    // make at (y = _cl, z = _height); the chamfer slope now lands cleanly
+    // on the rim instead of sticking up into a point above it.
     translate([-eps, 0, 0])
         rotate([90, 0, 90])
             linear_extrude(height = _wall + 2*eps)
                 polygon([[_cl,         _height + eps],
                          [_cl + taper, _height + eps],
-                         [_cl + taper, _height - h]]);
-    // Same wedge on the RIGHT side wall.
+                         [_cl + taper, _height - h],
+                         [_cl,         _height - h]]);
+    // Same cut on the RIGHT side wall.
     translate([_width - _wall - eps, 0, 0])
         rotate([90, 0, 90])
             linear_extrude(height = _wall + 2*eps)
                 polygon([[_cl,         _height + eps],
                          [_cl + taper, _height + eps],
-                         [_cl + taper, _height - h]]);
+                         [_cl + taper, _height - h],
+                         [_cl,         _height - h]]);
 
     // 45 deg chamfer on the FRONT face of the inner-half side-wall lip,
     // killing the sharp vertical "nose" at y = _cl + taper.  The lip now
