@@ -75,6 +75,10 @@ Recommended slicer settings (tested on Bambu Lab H2D with Bambu PLA Basic):
 
 For a ready-to-print `.3mf` with profile-tuned settings, use the [MakerWorld print profile](https://makerworld.com/de/models/2867878-parametric-open-front-storage-bin#profileId-3204005).
 
+### Bambu Studio project files
+
+The [`print-profiles/`](print-profiles/) folder contains Bambu Studio `.3mf` project files for concrete fitments used in a HYMER Grand Canyon S camper — open them directly in Bambu Studio, re-slice if needed, and print. See [`print-profiles/README.md`](print-profiles/README.md) for details.
+
 ## License
 
 Released under the [MIT License](LICENSE). Attribution is appreciated but not required.

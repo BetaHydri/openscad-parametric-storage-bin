@@ -7,6 +7,10 @@
 *.term
 *.echo
 
+# Keep curated Bambu Studio print profiles
+!print-profiles/*.3mf
+!docs/*.png
+
 # Editor / OS
 .vscode/
 .DS_Store
