@@ -1,0 +1,13 @@
+# OpenSCAD build artefacts
+*.stl
+*.3mf
+*.png
+*.csg
+*.ast
+*.term
+*.echo
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
