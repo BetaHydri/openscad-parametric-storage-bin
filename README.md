@@ -4,7 +4,7 @@ A fully parametric, open-front storage bin with a low front wall and a diagonal 
 
 Originally designed to organise the technical compartments of a HYMER Grand Canyon S camper, but useful anywhere you need a tidy, drop-in bin: drawers, shelves, vans, workshops, kitchens.
 
-![Storage Bin Preview](https://makerworld.bblmw.com/makerworld/model/profile.png)
+![Storage Bin Preview](docs/preview.png)
 
 ## Print profile on MakerWorld
 
