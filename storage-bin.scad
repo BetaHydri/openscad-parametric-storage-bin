@@ -35,6 +35,17 @@ wall = 2.0;         // [1.2:0.1:4.0]
 // Floor thickness in mm
 floor_t = 2.0;      // [1.2:0.1:4.0]
 
+/* [Stacking] */
+// Make bins stackable: adds a lip on top (back + rear sides) and a matching
+// recess in the floor underside. Costs NO interior volume — only ~lip height
+// of total stack height. Set to 0 to disable.
+stackable = 0;          // [0:Off, 1:On]
+// Height of the stacking lip / depth of the underside recess (mm)
+stack_lip_h = 3.0;      // [1.0:0.1:8.0]
+// Horizontal clearance between lip and recess, per side (mm). Increase for
+// looser fit, decrease for tighter.
+stack_clearance = 0.2;  // [0.1:0.05:0.6]
+
 /* [Cosmetic] */
 // Outer bottom edge chamfer (elephant-foot relief) in mm
 bottom_chamfer = 0.6;  // [0:0.1:2.0]
@@ -71,11 +82,17 @@ _cl = max(0, min(chamfer_len, _depth - wall));         // chamfer fits in depth
 _wall   = min(wall,   min(_width, _depth) / 2 - 1);    // walls fit in footprint
 _floor  = min(floor_t, _height - 1);                   // floor < height
 
+// Stacking lip clamped so it never exceeds available wall height or floor.
+_lip_h = max(0, min(stack_lip_h, min(_height - _fh - 1, _floor - 0.4)));
+
 // ============================================================
 //  Geometry
 // ============================================================
 
-module bin() {
+// `stack` / `lip_h` / `clearance` default to the file-scope params so the
+// MakerWorld Customizer keeps working. External scripts that `use <>` this
+// file can override them per call (see docs/_render-stacked.scad).
+module bin(stack=stackable, lip_h=_lip_h, clearance=stack_clearance) {
     difference() {
         union() {
             // Floor
@@ -99,6 +116,12 @@ module bin() {
 
         // Outer bottom chamfer (elephant-foot relief)
         if (bottom_chamfer > 0) bottom_chamfer_cut();
+
+        // Stacking interface (lip on top + recess on bottom)
+        if (stack && lip_h > 0) {
+            top_lip_cut(lip_h);
+            bottom_recess_cut(lip_h, clearance);
+        }
     }
 }
 
@@ -141,6 +164,38 @@ module bottom_chamfer_cut() {
         rotate([-90, 0, 90])
             linear_extrude(height = _depth + 0.02)
                 polygon([[0,0],[-c,0],[0,c]]);
-    }
+}
+
+// ----- Stacking helpers -------------------------------------
+// Shave the OUTER half of the top of the back wall + rear portion of the
+// side walls, leaving the INNER half as an upward-protruding lip.
+module top_lip_cut(h=_lip_h) {
+    w2 = _wall / 2;        // outer half-thickness we cut away
+    eps = 0.01;
+    // Back wall outer half
+    translate([-eps, _depth - w2, _height - h])
+        cube([_width + 2*eps, w2 + eps, h + eps]);
+    // Left side wall outer half (only the rear section that reaches _height)
+    translate([-eps, _cl, _height - h])
+        cube([w2 + eps, _depth - _cl + eps, h + eps]);
+    // Right side wall outer half
+    translate([_width - w2, _cl, _height - h])
+        cube([w2 + 2*eps, _depth - _cl + eps, h + eps]);
+}
+
+// Pocket in the floor underside that mates with the lip of the bin below.
+module bottom_recess_cut(h=_lip_h, cl=stack_clearance) {
+    w2  = _wall / 2;       // lip thickness
+    eps = 0.01;
+    // Back lip recess (inner half of back-wall footprint, + clearance)
+    translate([-cl, _depth - _wall - cl, -eps])
+        cube([_width + 2*cl, w2 + 2*cl, h + eps]);
+    // Left side lip recess
+    translate([w2 - cl, _cl - cl, -eps])
+        cube([w2 + 2*cl, _depth - _cl + cl, h + eps]);
+    // Right side lip recess
+    translate([_width - _wall - cl, _cl - cl, -eps])
+        cube([w2 + 2*cl, _depth - _cl + cl, h + eps]);
+}
 
 bin();
