@@ -19,6 +19,7 @@ You can also customise the dimensions directly on MakerWorld via the Parametric 
 - Fully parametric: width, depth, height, front-wall height, chamfer length, wall and floor thickness
 - Diagonal chamfer on the side walls for easy access to contents
 - **Optional stacking interface** — inner lip on top mates with a recess on the bottom, so bins stack securely without sacrificing any interior volume
+- **Optional relief texture** — vertical grooves on the outer walls in three styles (rectangular, V-groove, rounded), symmetrically distributed with configurable corner margin
 - Optional bottom-edge chamfer to relieve elephant-foot artefacts
 - Printer presets for Bambu Lab **P1S**, **P2S**, **H2C**, **H2D** (auto-clamps dimensions to the build volume) plus a **Custom** option
 - Single STL — prints flat on the build plate, no supports required
@@ -41,6 +42,13 @@ All parameters are exposed via the OpenSCAD Customizer (and the MakerWorld Param
 | Stacking | `stack_lip_h` | Height of the lip / depth of the recess (mm, default 3.0) |
 | Stacking | `stack_clearance` | Horizontal fit clearance per side (mm, default 0.2) |
 | Cosmetic | `bottom_chamfer` | Outer bottom-edge chamfer for elephant-foot relief |
+| Relief / Texture | `relief_enabled` | Off (default) or On — adds vertical grooves on outer walls |
+| Relief / Texture | `relief_style` | Groove shape: `Rectangular`, `V-groove`, or `Rounded` (default) |
+| Relief / Texture | `relief_count` | Approximate total number of grooves around the full perimeter (default 240) |
+| Relief / Texture | `relief_depth` | Groove depth into wall surface in mm (default 0.6) |
+| Relief / Texture | `relief_width` | Groove width in mm (default 1.0) |
+| Relief / Texture | `relief_corner` | Min. solid wall at each corner in mm (default 1.0) |
+| Relief / Texture | `relief_walls` | Which walls: `All walls`, `Sides only`, or `Front+Back only` |
 | Quality | `$fn` | Render smoothness |
 
 Geometric inputs are clamped internally, so any combination of slider values produces a valid model.
@@ -59,6 +67,21 @@ Notes:
 - The open front means there is no lip across the front of the bin, only on the back and rear-side sections — but that's plenty for lateral stability.
 - For tall narrow bins or heavy contents, consider increasing `wall` to 2.4–3.0 mm so the half-thickness lip stays rigid.
 - All stacked bins must have the same `width`, `depth`, `wall`, and `stack_lip_h` for the fit to work.
+
+### Relief / Texture — how it works
+
+Set `relief_enabled = On` to add vertical grooves on the outer wall surfaces for a decorative ribbed look.
+
+Three groove shapes are available:
+
+- **Rectangular** — flat-bottom channel, sharpest shadow lines, best grip
+- **V-groove** — triangular notch, crisp light/shadow effect
+- **Rounded** — semicircular channel, smooth premium look (default)
+
+Grooves are distributed **symmetrically per wall** — the spacing is derived from the total perimeter count, then rounded per wall so no groove ever falls on a corner edge. The `relief_corner` parameter guarantees a minimum solid margin at every corner for structural integrity and clean printing.
+
+> **Print note:** Groove depth is automatically clamped to leave at least 0.4 mm of wall thickness.
+> All groove shapes print cleanly on FDM at 0.2 mm layer height without supports.
 
 ## Installing OpenSCAD
 
