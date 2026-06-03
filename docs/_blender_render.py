@@ -106,24 +106,27 @@ cam_obj = bpy.data.objects.new("Camera", cam_data)
 bpy.context.collection.objects.link(cam_obj)
 bpy.context.scene.camera = cam_obj
 
-# Position camera — look INTO the open front (front is at Y=0, back at Y=depth)
+# Position camera — front-left 3/4 view to show chamfer on BOTH bins
+# (matches the original OpenSCAD preview angle)
 if STACKED:
-    cam_obj.location = (0.22, -0.25, 0.18)
+    cam_obj.location = (-0.12, -0.18, 0.20)   # front-left, elevated
 else:
-    cam_obj.location = (0.18, -0.20, 0.12)
+    cam_obj.location = (-0.08, -0.14, 0.12)
+
+cam_data.lens = 45  # slightly wider for full framing
 
 # Point camera at center of the stack/bin
 import mathutils
 if STACKED:
     target = mathutils.Vector((
-        obj.location.x + 0.02,  # slight offset for 3/4 angle
-        obj.location.y + 0.03,  # look slightly into the bin
-        (BIN_HEIGHT_M - STACK_LIP_M) * 0.55  # center height of stacked pair
+        0.06,    # center of bin width (120mm / 2)
+        0.05,    # mid-depth (100mm / 2)
+        (BIN_HEIGHT_M - STACK_LIP_M) * 0.45
     ))
 else:
     target = mathutils.Vector((
-        obj.location.x,
-        obj.location.y + 0.02,
+        0.06,
+        0.05,
         BIN_HEIGHT_M * 0.4
     ))
 direction = target - cam_obj.location
