@@ -55,8 +55,8 @@ if STACKED:
     obj2.location.z = -min_z2 + (BIN_HEIGHT_M - STACK_LIP_M)
     all_objects.append(obj2)
 
-# ── Matte PLA material (Bambu steel-blue) ────────────────────
-mat = bpy.data.materials.new("PLA_Blue")
+# ── Wooden PLA material (procedural wood grain) ────────────
+mat = bpy.data.materials.new("PLA_Wood")
 mat.use_nodes = True
 nodes = mat.node_tree.nodes
 links = mat.node_tree.links
@@ -65,10 +65,56 @@ nodes.clear()
 output = nodes.new("ShaderNodeOutputMaterial")
 principled = nodes.new("ShaderNodeBsdfPrincipled")
 
-# Steel-blue PLA — sRGB values (Blender interprets Base Color as sRGB automatically)
-principled.inputs["Base Color"].default_value = (0.15, 0.33, 0.50, 1.0)
-principled.inputs["Roughness"].default_value = 0.45
-principled.inputs["Specular IOR Level"].default_value = 0.4
+# Texture coordinates → mapping (stretch grain along Z so layer lines align
+# with wood rings)
+tex_coord = nodes.new("ShaderNodeTexCoord")
+mapping = nodes.new("ShaderNodeMapping")
+mapping.inputs["Scale"].default_value = (1.0, 1.0, 8.0)
+links.new(tex_coord.outputs["Generated"], mapping.inputs["Vector"])
+
+# Wave texture = wood rings
+wave = nodes.new("ShaderNodeTexWave")
+wave.wave_type = 'BANDS'
+wave.wave_profile = 'SIN'
+wave.inputs["Scale"].default_value = 6.0
+wave.inputs["Distortion"].default_value = 8.0
+wave.inputs["Detail"].default_value = 4.0
+wave.inputs["Detail Scale"].default_value = 1.5
+links.new(mapping.outputs["Vector"], wave.inputs["Vector"])
+
+# Noise for fine grain breakup
+noise = nodes.new("ShaderNodeTexNoise")
+noise.inputs["Scale"].default_value = 40.0
+noise.inputs["Detail"].default_value = 4.0
+noise.inputs["Roughness"].default_value = 0.6
+links.new(mapping.outputs["Vector"], noise.inputs["Vector"])
+
+# Mix wave + noise
+mix_grain = nodes.new("ShaderNodeMix")
+mix_grain.data_type = 'FLOAT'
+mix_grain.inputs["Factor"].default_value = 0.35
+links.new(wave.outputs["Fac"], mix_grain.inputs[2])     # A
+links.new(noise.outputs["Fac"], mix_grain.inputs[3])    # B
+
+# Color ramp → warm wood palette (light tan → dark walnut)
+ramp = nodes.new("ShaderNodeValToRGB")
+ramp.color_ramp.elements[0].position = 0.25
+ramp.color_ramp.elements[0].color = (0.55, 0.32, 0.16, 1.0)   # darker grain
+ramp.color_ramp.elements[1].position = 0.75
+ramp.color_ramp.elements[1].color = (0.86, 0.62, 0.36, 1.0)   # lighter wood
+mid = ramp.color_ramp.elements.new(0.5)
+mid.color = (0.72, 0.48, 0.25, 1.0)
+links.new(mix_grain.outputs[0], ramp.inputs["Fac"])
+
+links.new(ramp.outputs["Color"], principled.inputs["Base Color"])
+principled.inputs["Roughness"].default_value = 0.65   # matte wood-PLA finish
+principled.inputs["Specular IOR Level"].default_value = 0.35
+
+# Subtle bump from the grain for tactile feel
+bump = nodes.new("ShaderNodeBump")
+bump.inputs["Strength"].default_value = 0.15
+links.new(mix_grain.outputs[0], bump.inputs["Height"])
+links.new(bump.outputs["Normal"], principled.inputs["Normal"])
 
 links.new(principled.outputs["BSDF"], output.inputs["Surface"])
 
@@ -83,8 +129,8 @@ for o in all_objects:
         bpy.ops.object.shade_smooth()
     o.select_set(False)
 
-# ── Ground plane (shadow catcher for realistic contact shadows) ──
-bpy.ops.mesh.primitive_plane_add(size=2.0, location=(0, 0, 0))
+# ── Ground plane (visible, warm neutral — receives real shadows) ──
+bpy.ops.mesh.primitive_plane_add(size=4.0, location=(0, 0, 0))
 ground = bpy.context.active_object
 ground.name = "Ground"
 ground_mat = bpy.data.materials.new("GroundMat")
@@ -93,11 +139,11 @@ gn = ground_mat.node_tree.nodes
 gl = ground_mat.node_tree.links
 gn.clear()
 g_out = gn.new("ShaderNodeOutputMaterial")
-g_bsdf = gn.new("ShaderNodeBsdfDiffuse")
-g_bsdf.inputs["Color"].default_value = (0.9, 0.9, 0.9, 1.0)
+g_bsdf = gn.new("ShaderNodeBsdfPrincipled")
+g_bsdf.inputs["Base Color"].default_value = (0.82, 0.78, 0.72, 1.0)
+g_bsdf.inputs["Roughness"].default_value = 0.9
 gl.new(g_bsdf.outputs["BSDF"], g_out.inputs["Surface"])
 ground.data.materials.append(ground_mat)
-ground.is_shadow_catcher = True
 
 # ── Camera ───────────────────────────────────────────────────
 cam_data = bpy.data.cameras.new("Camera")
@@ -221,9 +267,9 @@ scene.cycles.use_denoising = True
 scene.render.resolution_x = 1200
 scene.render.resolution_y = 800
 scene.render.resolution_percentage = 100
-scene.render.film_transparent = True
+scene.render.film_transparent = False
 scene.render.image_settings.file_format = 'PNG'
-scene.render.image_settings.color_mode = 'RGBA'
+scene.render.image_settings.color_mode = 'RGB'
 scene.render.filepath = OUT_PATH
 
 scene.view_settings.view_transform = 'Filmic'
