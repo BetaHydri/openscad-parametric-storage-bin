@@ -2,6 +2,7 @@
 // Usage:
 //   openscad -o docs/preview-stacked.png --imgsize=1200,800 \
 //            --colorscheme=Tomorrow --camera=80,60,40,55,0,40,520 \
+//            -D relief_enabled=1 \
 //            docs/_render-stacked.scad
 
 use <../storage-bin.scad>;
@@ -11,7 +12,7 @@ use <../storage-bin.scad>;
 _HEIGHT = 70;
 _LIP_H  = 3.0;
 
-// Bottom bin with stacking interface enabled
+// Bottom bin with stacking interface and relief texture enabled
 bin(stack=true);
 
 // Top bin lifted so the inner lip slots into the underside recess

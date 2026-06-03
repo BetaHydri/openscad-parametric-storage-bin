@@ -24,7 +24,7 @@ You can also customise the dimensions directly on MakerWorld via the Parametric 
 - Printer presets for Bambu Lab **P1S**, **P2S**, **H2C**, **H2D** (auto-clamps dimensions to the build volume) plus a **Custom** option
 - Single STL — prints flat on the build plate, no supports required
 
-![Stacked bins preview](docs/preview-stacked.png)
+![Stacked bins with relief texture](docs/preview-stacked.png)
 
 ## Parameters
 
