@@ -106,14 +106,15 @@ cam_obj = bpy.data.objects.new("Camera", cam_data)
 bpy.context.collection.objects.link(cam_obj)
 bpy.context.scene.camera = cam_obj
 
-# Position camera — RIGHT-front 3/4 view to show chamfer slope on BOTH bins
-# (matching the real photo angle where the open front + chamfer are visible)
+# Position camera — matching OpenSCAD --camera=80,60,40,55,0,40,520
+# elevated front view (~55° elevation), pulled back to show BOTH bins fully
+# with chamfer slope visible on top AND bottom bin
 if STACKED:
-    cam_obj.location = (0.20, -0.12, 0.16)
+    cam_obj.location = (0.28, -0.22, 0.28)   # far back, high elevation
 else:
-    cam_obj.location = (0.16, -0.10, 0.10)
+    cam_obj.location = (0.20, -0.16, 0.16)
 
-cam_data.lens = 42  # wider for full framing
+cam_data.lens = 35  # wide enough to fit full stack
 
 # Point camera at center of the stack/bin
 import mathutils
@@ -121,13 +122,13 @@ if STACKED:
     target = mathutils.Vector((
         0.06,    # center of bin width (120mm / 2)
         0.05,    # mid-depth (100mm / 2)
-        0.065    # center height of stacked pair (~137mm / 2)
+        0.06     # center height of stacked pair
     ))
 else:
     target = mathutils.Vector((
         0.06,
         0.05,
-        0.035    # center height of single bin (70mm / 2)
+        0.035
     ))
 direction = target - cam_obj.location
 rot_quat = direction.to_track_quat('-Z', 'Y')
