@@ -106,12 +106,12 @@ cam_obj = bpy.data.objects.new("Camera", cam_data)
 bpy.context.collection.objects.link(cam_obj)
 bpy.context.scene.camera = cam_obj
 
-# Position camera — front-left 3/4 view to show chamfer on BOTH bins
-# (matches the original OpenSCAD preview angle)
+# Position camera — RIGHT-front 3/4 view to show chamfer slope on BOTH bins
+# (matching the real photo angle where the open front + chamfer are visible)
 if STACKED:
-    cam_obj.location = (-0.16, -0.22, 0.18)   # further back to fit both bins
+    cam_obj.location = (0.20, -0.12, 0.16)
 else:
-    cam_obj.location = (-0.10, -0.16, 0.10)
+    cam_obj.location = (0.16, -0.10, 0.10)
 
 cam_data.lens = 42  # wider for full framing
 
