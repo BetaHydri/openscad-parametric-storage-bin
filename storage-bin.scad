@@ -108,7 +108,7 @@ _relief_depth = min(relief_depth, _wall - 0.4);
 //  Geometry
 // ============================================================
 
-module bin(stack=stackable, lip_h=_lip_h, clearance=stack_clearance) {
+module bin(stack=stackable, lip_h=_lip_h, clearance=stack_clearance, relief=relief_enabled) {
     difference() {
         union() {
             cube([_width, _depth, _floor]);
@@ -132,7 +132,7 @@ module bin(stack=stackable, lip_h=_lip_h, clearance=stack_clearance) {
             bottom_recess_cut(lip_h, clearance);
         }
 
-        if (relief_enabled && relief_count > 0) relief_grooves();
+        if (relief && relief_count > 0) relief_grooves();
     }
 }
 
