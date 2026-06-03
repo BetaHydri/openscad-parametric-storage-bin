@@ -78,7 +78,7 @@ for o in all_objects:
     bpy.context.view_layer.objects.active = o
     o.select_set(True)
     try:
-        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(50))
+        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(25))
     except AttributeError:
         bpy.ops.object.shade_smooth()
     o.select_set(False)
@@ -109,11 +109,11 @@ bpy.context.scene.camera = cam_obj
 # Position camera — front-left 3/4 view to show chamfer on BOTH bins
 # (matches the original OpenSCAD preview angle)
 if STACKED:
-    cam_obj.location = (-0.12, -0.18, 0.20)   # front-left, elevated
+    cam_obj.location = (-0.16, -0.22, 0.18)   # further back to fit both bins
 else:
-    cam_obj.location = (-0.08, -0.14, 0.12)
+    cam_obj.location = (-0.10, -0.16, 0.10)
 
-cam_data.lens = 45  # slightly wider for full framing
+cam_data.lens = 42  # wider for full framing
 
 # Point camera at center of the stack/bin
 import mathutils
@@ -121,13 +121,13 @@ if STACKED:
     target = mathutils.Vector((
         0.06,    # center of bin width (120mm / 2)
         0.05,    # mid-depth (100mm / 2)
-        (BIN_HEIGHT_M - STACK_LIP_M) * 0.45
+        0.065    # center height of stacked pair (~137mm / 2)
     ))
 else:
     target = mathutils.Vector((
         0.06,
         0.05,
-        BIN_HEIGHT_M * 0.4
+        0.035    # center height of single bin (70mm / 2)
     ))
 direction = target - cam_obj.location
 rot_quat = direction.to_track_quat('-Z', 'Y')
@@ -187,7 +187,7 @@ bpy.context.collection.objects.link(sun_obj)
 # Interior fill lights — small point lights inside each bin to prevent black holes
 for idx, o in enumerate(all_objects):
     interior = bpy.data.lights.new(f"InteriorFill_{idx}", type='POINT')
-    interior.energy = 1.5
+    interior.energy = 4.0
     interior.color = (0.85, 0.90, 1.0)  # cool fill
     interior.shadow_soft_size = 0.05
     int_obj = bpy.data.objects.new(f"InteriorFill_{idx}", interior)
@@ -209,7 +209,7 @@ wn.clear()
 w_out = wn.new("ShaderNodeOutputWorld")
 w_bg = wn.new("ShaderNodeBackground")
 w_bg.inputs["Color"].default_value = (0.90, 0.92, 0.96, 1.0)
-w_bg.inputs["Strength"].default_value = 0.15  # minimal ambient
+w_bg.inputs["Strength"].default_value = 0.25  # moderate ambient to fill interior crevices
 wl.new(w_bg.outputs["Background"], w_out.inputs["Surface"])
 
 # ── Render settings (Cycles path tracer) ─────────────────────
