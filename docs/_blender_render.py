@@ -96,14 +96,14 @@ mix_grain.inputs["Factor"].default_value = 0.35
 links.new(wave.outputs["Fac"], mix_grain.inputs[2])     # A
 links.new(noise.outputs["Fac"], mix_grain.inputs[3])    # B
 
-# Color ramp → warm wood palette (light tan → dark walnut)
+# Color ramp → warm wood palette (deeper walnut tones)
 ramp = nodes.new("ShaderNodeValToRGB")
 ramp.color_ramp.elements[0].position = 0.25
-ramp.color_ramp.elements[0].color = (0.55, 0.32, 0.16, 1.0)   # darker grain
+ramp.color_ramp.elements[0].color = (0.28, 0.14, 0.06, 1.0)   # dark walnut grain
 ramp.color_ramp.elements[1].position = 0.75
-ramp.color_ramp.elements[1].color = (0.86, 0.62, 0.36, 1.0)   # lighter wood
+ramp.color_ramp.elements[1].color = (0.58, 0.36, 0.18, 1.0)   # mid wood
 mid = ramp.color_ramp.elements.new(0.5)
-mid.color = (0.72, 0.48, 0.25, 1.0)
+mid.color = (0.42, 0.24, 0.12, 1.0)
 links.new(mix_grain.outputs[0], ramp.inputs["Fac"])
 
 links.new(ramp.outputs["Color"], principled.inputs["Base Color"])
@@ -129,7 +129,7 @@ for o in all_objects:
         bpy.ops.object.shade_smooth()
     o.select_set(False)
 
-# ── Ground plane (visible, warm neutral — receives real shadows) ──
+# ── Ground plane (shadow catcher — invisible but receives shadow on alpha) ──
 bpy.ops.mesh.primitive_plane_add(size=4.0, location=(0, 0, 0))
 ground = bpy.context.active_object
 ground.name = "Ground"
@@ -139,11 +139,11 @@ gn = ground_mat.node_tree.nodes
 gl = ground_mat.node_tree.links
 gn.clear()
 g_out = gn.new("ShaderNodeOutputMaterial")
-g_bsdf = gn.new("ShaderNodeBsdfPrincipled")
-g_bsdf.inputs["Base Color"].default_value = (0.82, 0.78, 0.72, 1.0)
-g_bsdf.inputs["Roughness"].default_value = 0.9
+g_bsdf = gn.new("ShaderNodeBsdfDiffuse")
+g_bsdf.inputs["Color"].default_value = (0.82, 0.78, 0.72, 1.0)
 gl.new(g_bsdf.outputs["BSDF"], g_out.inputs["Surface"])
 ground.data.materials.append(ground_mat)
+ground.is_shadow_catcher = True
 
 # ── Camera ───────────────────────────────────────────────────
 cam_data = bpy.data.cameras.new("Camera")
@@ -267,9 +267,9 @@ scene.cycles.use_denoising = True
 scene.render.resolution_x = 1200
 scene.render.resolution_y = 800
 scene.render.resolution_percentage = 100
-scene.render.film_transparent = False
+scene.render.film_transparent = True
 scene.render.image_settings.file_format = 'PNG'
-scene.render.image_settings.color_mode = 'RGB'
+scene.render.image_settings.color_mode = 'RGBA'
 scene.render.filepath = OUT_PATH
 
 scene.view_settings.view_transform = 'Filmic'
