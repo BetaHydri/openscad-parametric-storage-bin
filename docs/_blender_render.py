@@ -96,14 +96,14 @@ mix_grain.inputs["Factor"].default_value = 0.35
 links.new(wave.outputs["Fac"], mix_grain.inputs[2])     # A
 links.new(noise.outputs["Fac"], mix_grain.inputs[3])    # B
 
-# Color ramp → warm wood palette (deeper walnut tones)
+# Color ramp → warm wood palette (medium walnut, brighter than darkest)
 ramp = nodes.new("ShaderNodeValToRGB")
 ramp.color_ramp.elements[0].position = 0.25
-ramp.color_ramp.elements[0].color = (0.28, 0.14, 0.06, 1.0)   # dark walnut grain
+ramp.color_ramp.elements[0].color = (0.38, 0.20, 0.09, 1.0)   # walnut grain
 ramp.color_ramp.elements[1].position = 0.75
-ramp.color_ramp.elements[1].color = (0.58, 0.36, 0.18, 1.0)   # mid wood
+ramp.color_ramp.elements[1].color = (0.72, 0.48, 0.25, 1.0)   # warm mid wood
 mid = ramp.color_ramp.elements.new(0.5)
-mid.color = (0.42, 0.24, 0.12, 1.0)
+mid.color = (0.55, 0.34, 0.17, 1.0)
 links.new(mix_grain.outputs[0], ramp.inputs["Fac"])
 
 links.new(ramp.outputs["Color"], principled.inputs["Base Color"])
@@ -152,11 +152,10 @@ cam_obj = bpy.data.objects.new("Camera", cam_data)
 bpy.context.collection.objects.link(cam_obj)
 bpy.context.scene.camera = cam_obj
 
-# Position camera — matching OpenSCAD --camera=80,60,40,55,0,40,520
-# elevated front view (~55° elevation), pulled back to show BOTH bins fully
-# with chamfer slope visible on top AND bottom bin
+# Position camera — framed so BOTH bins fit centered, with headroom
+# above the top bin and ground shadow visible below
 if STACKED:
-    cam_obj.location = (0.28, -0.22, 0.28)   # far back, high elevation
+    cam_obj.location = (0.36, -0.30, 0.30)   # further back + slightly lower
 else:
     cam_obj.location = (0.20, -0.16, 0.16)
 
@@ -168,7 +167,7 @@ if STACKED:
     target = mathutils.Vector((
         0.06,    # center of bin width (120mm / 2)
         0.05,    # mid-depth (100mm / 2)
-        0.06     # center height of stacked pair
+        0.075    # mid-height of stacked pair (~137mm tall → ~0.069m centre)
     ))
 else:
     target = mathutils.Vector((
