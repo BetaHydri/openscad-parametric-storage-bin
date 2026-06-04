@@ -37,7 +37,7 @@ All parameters are exposed via the OpenSCAD Customizer (and the MakerWorld Param
 | Outer Dimensions | `width`, `depth`, `height` | Outer size in mm (auto-capped to build volume) |
 | Front Opening | `front_height` | Height of the short front wall |
 | Front Opening | `chamfer_len` | Length of the diagonal chamfer along the side walls (0 = vertical step) |
-| Walls | `wall`, `floor_t` | Wall and floor thickness |
+| Walls | `wall`, `floor_t` | Wall and floor thickness (auto-raised to 3.0 mm when stacking is on) |
 | Stacking | `stackable` | Off (default) or On — adds a lip on top + recess on bottom so bins stack |
 | Stacking | `stack_lip_h` | Height of the lip / depth of the recess (mm, default 3.0) |
 | Stacking | `stack_clearance` | Horizontal fit clearance per side (mm, default 0.2) |
@@ -65,7 +65,7 @@ When you stack two bins, the lip of the lower bin slots into the recess of the u
 Notes:
 
 - The open front means there is no lip across the front of the bin, only on the back and rear-side sections — but that's plenty for lateral stability.
-- For tall narrow bins or heavy contents, consider increasing `wall` to 2.4–3.0 mm so the half-thickness lip stays rigid.
+- When stacking is enabled, `wall` is automatically raised to a minimum of **3.0 mm** so the half-thickness lip and recess stay structurally sound. If you set a lower value, the model auto-corrects it and logs a note to the OpenSCAD console.
 - All stacked bins must have the same `width`, `depth`, `wall`, and `stack_lip_h` for the fit to work.
 
 ### Relief / Texture — how it works

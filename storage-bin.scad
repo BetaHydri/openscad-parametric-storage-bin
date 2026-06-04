@@ -30,7 +30,7 @@ front_height = 30;  // [5:1:495]
 chamfer_len = 35;   // [0:1:495]
 
 /* [Walls] */
-// Side / front / back wall thickness in mm
+// Side / front / back wall thickness in mm (min 3.0 when stacking is on)
 wall = 2.0;         // [1.2:0.1:4.0]
 // Floor thickness in mm
 floor_t = 2.0;      // [1.2:0.1:4.0]
@@ -96,7 +96,9 @@ _height = min(height, _max_z);
 
 _fh = min(front_height, _height - 5);
 _cl = max(0, min(chamfer_len, _depth - wall));
-_wall   = min(wall,   min(_width, _depth) / 2 - 1);
+// Enforce minimum wall for stacking: wall/2 lip+recess need >= 1.5 mm each
+_wall_raw = min(wall, min(_width, _depth) / 2 - 1);
+_wall     = max(_wall_raw, stackable ? 3.0 : 0);
 _floor  = min(floor_t, _height - 1);
 
 _lip_h = max(0, min(stack_lip_h, min(_height - _fh - 1, _floor - 0.4)));
@@ -189,10 +191,13 @@ module top_lip_cut(h=_lip_h) {
 module bottom_recess_cut(h=_lip_h, cl=stack_clearance) {
     w2  = _wall / 2;
     eps = 0.01;
+    // Back channel (full width)
     translate([-cl, _depth - _wall - cl, -eps])
         cube([_width + 2*cl, w2 + 2*cl, h + eps]);
+    // Left side channel
     translate([w2 - cl, _cl - cl, -eps])
         cube([w2 + 2*cl, _depth - _cl + 2*cl, h + eps]);
+    // Right side channel
     translate([_width - _wall - cl, _cl - cl, -eps])
         cube([w2 + 2*cl, _depth - _cl + 2*cl, h + eps]);
 }
@@ -293,5 +298,10 @@ module relief_grooves() {
         }
     }
 }
+
+// Warn if wall was auto-raised for stacking
+if (stackable && _wall > _wall_raw)
+    echo(str("NOTE: Wall raised from ", _wall_raw, " to ", _wall,
+             " mm (minimum for stacking recess)."));
 
 bin();
